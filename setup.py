@@ -10,6 +10,6 @@ setup(name='id3fixmp3',
     author='Daniel Pérez Rada',
     packages=find_packages(exclude=['tests']),
     install_requires=[
-      "mutagen",
+      "mutagen", "httplib2", "ludibrio", "lxml"
     ]
 )

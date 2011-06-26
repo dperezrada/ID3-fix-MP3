@@ -94,5 +94,9 @@ class TestMP3(unittest.TestCase):
         self.assertEquals('Autumn', mp3_file.getTag('title'))
         self.assertEquals('Vivaldi', mp3_file.getTag('artist'))
     
+    #Download image
+    #Get info from filename
+    #Set image
+    
 if __name__ == '__main__':
     unittest.main()
