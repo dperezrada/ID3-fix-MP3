@@ -28,24 +28,31 @@ class MP3():
             self.setInitialID3(filepath)
             self.id3_data = MutagenID3.ID3(filepath)
     
-    def _getFileNameInfo(self):
+    def _getFileNameInfo(self, id3_tags_to_match, to_check_expression):
         filename = os.path.basename(self.filepath)
-        track_number, song_title = re.match(r'^\s*(\d+)\s*-?\s*(.*)', filename).groups()
-        song_title = "".join(song_title.split(".")[:-1]).title()
-        return (int(track_number), song_title)
-
-    def getFileNameInfo(self):
-        try:
-            return self._getFileNameInfo()
-        except:
-            return (None, None)
+        id3_tags_matches = re.match(re.compile(to_check_expression), filename).groups()
+        found_tags = {}
+        if len(id3_tags_matches) == len(id3_tags_to_match):
+            for i in range(0, len(id3_tags_to_match)):
+                found_tags[id3_tags_to_match[i]] = id3_tags_matches[i]
+        return found_tags
     
-    def setFileNameInfo(self):
-        track_number, song_title = self.getFileNameInfo()
-        if track_number:
-            self.id3_data.add(MutagenID3.TRCK(encoding=3, text=[track_number]))
-        if song_title:
-            self.id3_data.add(MutagenID3.TIT2(encoding=3, text=[song_title]))
+    def _prepareFilenameExpression(self, filename_expression):
+        tag_parameter_expression = '\{([^\}]*)\}'
+        id3_tags_to_match = re.findall(tag_parameter_expression, filename_expression)
+        to_check_expression = re.sub(tag_parameter_expression, '(.*)',  filename_expression)
+        return (id3_tags_to_match, to_check_expression)
+
+    def getFileNameInfo(self, filename_expression):   #Default name: {tracknumber} [-] {title}
+        try:
+            id3_tags_to_match, to_check_expression = self._prepareFilenameExpression(filename_expression)
+            return self._getFileNameInfo(id3_tags_to_match, to_check_expression)
+        except:
+            return {}
+    
+    def setFileNameInfo(self, filename_expression = '{tracknumber} -? {title}.mp3'):
+        for key, value in self.getFileNameInfo(filename_expression).iteritems():
+            self.setTag(key, value)
     
     def getTag(self, key):
         try:

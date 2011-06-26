@@ -16,6 +16,7 @@ FIXTURES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixt
 FIXTURES_TEST_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures_test')
 FILE_WITH_NO_ID3 = '03 - Autumn.mp3'
 FILE_WITH_NO_ID3_BAD_NAME = 'vivaldi.mp3'
+FILE_WITH_NO_ID3_CUSTOM_NAME = '03 - Autumn - Vivaldi.mp3'
 
 class TestMP3(unittest.TestCase):
 
@@ -53,7 +54,7 @@ class TestMP3(unittest.TestCase):
         mp3_file.setFileNameInfo()
         mp3_file.save()
         self.assertEquals(2, len(mp3_file.getTags()))
-        self.assertEquals('3', mp3_file.getTag('tracknumber'))
+        self.assertEquals('03', mp3_file.getTag('tracknumber'))
         self.assertEquals('Autumn', mp3_file.getTag('title'))
 
     def testUnsuccessfullySetTrackNumberFromFilename(self):
@@ -72,6 +73,16 @@ class TestMP3(unittest.TestCase):
         self.assertEquals(4, len(mp3_file.getTags()))
         mp3_file.removeID3TagsNotIn(('title', 'artist'))
         self.assertEquals(2, len(mp3_file.getTags()))
+    
+    def testSetTrackNumberFromCustomFilename(self):
+        mp3_file = MP3(self._fixturesFilepath(FILE_WITH_NO_ID3_CUSTOM_NAME))
+        self.assertEquals(0, len(mp3_file.getTags()))
+        mp3_file.setFileNameInfo('{tracknumber} - {title} - {artist}.mp3')
+        mp3_file.save()
+        self.assertEquals(3, len(mp3_file.getTags()))
+        self.assertEquals('03', mp3_file.getTag('tracknumber'))
+        self.assertEquals('Autumn', mp3_file.getTag('title'))
+        self.assertEquals('Vivaldi', mp3_file.getTag('artist'))
     
 if __name__ == '__main__':
     unittest.main()

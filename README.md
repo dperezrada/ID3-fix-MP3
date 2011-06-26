@@ -1,4 +1,4 @@
-# ID3 FIX MP3
+# ID3 FIX (MP3)
 
 ## Why?
 
