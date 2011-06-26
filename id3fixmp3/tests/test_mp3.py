@@ -73,11 +73,21 @@ class TestMP3(unittest.TestCase):
         self.assertEquals(4, len(mp3_file.getTags()))
         mp3_file.removeID3TagsNotIn(('title', 'artist'))
         self.assertEquals(2, len(mp3_file.getTags()))
+
+    def testMatchFilenameExpression(self):
+        mp3_file = MP3(self._fixturesFilepath(FILE_WITH_NO_ID3_CUSTOM_NAME))
+        expected_tags = {
+            'tracknumber': '03',
+            'title': 'Autumn',
+            'artist': 'Vivaldi',
+        }
+        received_tags = mp3_file.getFileNameInfo('(?P<tracknumber>\d+) - (?P<title>.*) - (?P<artist>.*).mp3')
+        self.assertEquals(expected_tags, received_tags)
     
     def testSetTrackNumberFromCustomFilename(self):
         mp3_file = MP3(self._fixturesFilepath(FILE_WITH_NO_ID3_CUSTOM_NAME))
         self.assertEquals(0, len(mp3_file.getTags()))
-        mp3_file.setFileNameInfo('{tracknumber} - {title} - {artist}.mp3')
+        mp3_file.setFileNameInfo('(?P<tracknumber>\d+) - (?P<title>.*) - (?P<artist>.*).mp3')
         mp3_file.save()
         self.assertEquals(3, len(mp3_file.getTags()))
         self.assertEquals('03', mp3_file.getTag('tracknumber'))
