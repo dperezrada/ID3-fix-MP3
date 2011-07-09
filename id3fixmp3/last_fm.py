@@ -8,8 +8,7 @@ class LastFM(object):
         self.connection = Http()
         
     def _makeRequest(self, url):
-        headers, body = self.connection.request(url)
-        return etree.fromstring(body)
+        return self.connection.request(url)
     
     def _runXpathAndAssignToDict(self, tree, xpath, value_name, info_dict):
         xpath_result = tree.xpath(xpath)
@@ -34,7 +33,8 @@ class LastFM(object):
             info_dict['tracks'].append(current_track)
             
     def getAlbumInfo(self, album, artist = None):
-        tree = self._makeRequest('http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=%s&artist=%s&album=%s' % (LASTFM_API_KEY, quote_plus(artist), quote_plus(album)))
+        headers, body = self._makeRequest('http://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=%s&artist=%s&album=%s' % (LASTFM_API_KEY, quote_plus(artist), quote_plus(album)))
+        tree = etree.fromstring(body)
         albumInfo = {}
         self._runXpathAndAssignToDict(tree, '//album/name/text()', 'album', albumInfo)
         self._runXpathAndAssignToDict(tree, '//album/artist/text()', 'artist', albumInfo)
@@ -42,4 +42,11 @@ class LastFM(object):
         self._processTracks(tree.xpath('//tracks/track'), albumInfo)
         self._runXpathAndAssignToDict(tree, '//toptags/tag/name/text()', 'tags', albumInfo)
         return albumInfo
-        
+    
+    def downloadImage(self, album_info, image_size, destination_path):
+        if album_info['images'].get(image_size):
+            headers, body = self.connection.request(album_info['images'].get(image_size))
+            f = open(destination_path, 'wb')
+            f.write(body)
+            f.close()
+            

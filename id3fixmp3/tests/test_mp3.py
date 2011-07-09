@@ -87,16 +87,31 @@ class TestMP3(unittest.TestCase):
     def testSetTrackNumberFromCustomFilename(self):
         mp3_file = MP3(self._fixturesFilepath(FILE_WITH_NO_ID3_CUSTOM_NAME))
         self.assertEquals(0, len(mp3_file.getTags()))
-        mp3_file.setFileNameInfo('(?P<tracknumber>\d+) - (?P<title>.*) - (?P<artist>.*).mp3')
+        mp3_file.setFileNameInfo('(?P<tracknumber>\d+) - (?P<title>.*) - (?P<artist>.*).mp3', base_path = FIXTURES_TEST_FOLDER)
         mp3_file.save()
         self.assertEquals(3, len(mp3_file.getTags()))
         self.assertEquals('03', mp3_file.getTag('tracknumber'))
         self.assertEquals('Autumn', mp3_file.getTag('title'))
         self.assertEquals('Vivaldi', mp3_file.getTag('artist'))
+
+    def testSetImage(self):
+        mp3_file = MP3(self._fixturesFilepath(FILE_WITH_NO_ID3_CUSTOM_NAME))
+        self.assertEquals(0, len(mp3_file.getTags()))
+        mp3_file.setImage(os.path.join(os.path.dirname(__file__), 'fixtures/last_fm/base_cover_image.jpg'))
+        self.assertEquals(1, len(mp3_file.getTags()))
+        mp3_file.save()
     
-    #Download image
-    #Get info from filename
-    #Set image
+    def testSetTrackNumberInfoInFolderAndTrack(self):
+        mp3_file = MP3(self._fixturesFilepath(os.path.join('vivaldi', FILE_WITH_NO_ID3)))
+        self.assertEquals(0, len(mp3_file.getTags()))
+        mp3_file.setFileNameInfo('(?P<artist>.*)/(?P<tracknumber>\d+) - (?P<title>.*).mp3', base_path = FIXTURES_TEST_FOLDER)
+        self.assertEquals(3, len(mp3_file.getTags()))
+        self.assertEquals('03', mp3_file.getTag('tracknumber'))
+        self.assertEquals('Autumn', mp3_file.getTag('title'))
+        self.assertEquals('vivaldi', mp3_file.getTag('artist'))
+
+        
+    #Get info from dir and filename
     
 if __name__ == '__main__':
     unittest.main()
